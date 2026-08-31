@@ -197,13 +197,7 @@ export default function CalculatorPage() {
       
       {/* 1. CABEÇALHO */}
       <section className="text-center space-y-3 sm:space-y-4">
-        <div className="flex items-center justify-center gap-3">
-          <span className="h-px w-12 bg-red-800" />
-          <p className="text-red-500 text-xs font-serif-gothic uppercase tracking-[0.35em]">
-            Oráculo de Valores
-          </p>
-          <span className="h-px w-12 bg-red-800" />
-        </div>
+
 
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-gothic tracking-wider text-neutral-100">
           CALCULADORA
