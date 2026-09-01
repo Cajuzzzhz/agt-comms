@@ -33,7 +33,9 @@ export default function Home() {
           </div>
           
           <p className="text-neutral-400 font-serif-gothic text-sm sm:text-base leading-relaxed max-w-lg mx-auto md:mx-0">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            Ola! Sou Cajuzzzhz, uma artista digital especializada em ilustração e design. Aqui você encontrará uma variedade de opções de comissões personalizadas, desde retratos de personagens, monstros e até simbolos.
+            <br></br><br></br>
+            Tenho o costume de desenhar personagens de rpg com foco em Ordem Paranormal, mas também posso criar ilustrações de outros estilos e temas.
           </p>
           
           {/* Navegação Rápida */}
@@ -58,9 +60,6 @@ export default function Home() {
           <div className="relative w-56 h-56 sm:w-72 sm:h-72 md:w-96 md:h-96 rounded-full border-2 border-red-950 p-2 shadow-[0_0_60px_rgba(180,10,10,0.2)] bg-[#070709]">
             <div className="w-full h-full rounded-full border border-red-900/60 overflow-hidden relative bg-neutral-950">
                <Image src="/images/avatar/persona_neutral.png" alt="Cajuzzzhz Persona" fill className="object-cover" /> 
-            </div>
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 bg-black text-red-600 text-xs font-gothic">
-              ♰
             </div>
           </div>
         </div>

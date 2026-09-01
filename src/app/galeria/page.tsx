@@ -3,8 +3,9 @@ import { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { X, Maximize2, FilterX, ChevronDown, Search, SlidersHorizontal } from 'lucide-react';
+import { X, Maximize2, FilterX, ChevronDown, Search, SlidersHorizontal, Tag as TagIcon } from 'lucide-react';
 import { galleryItems } from '@/data/gallery';
+import { GalleryItem } from '@/types';
 
 // 1. SELECT CUSTOMIZADO
 interface Option {
@@ -145,7 +146,7 @@ function GalleryContent() {
     return Array.from(new Set(tags)).sort();
   }, []);
 
-  const allCategories = ['icon', 'halfbody', 'fullbody'];
+  const allCategories = ['icon', 'halfbody', 'fullbody', 'symbol', 'logo'];
   const urlCategory = searchParams.get('category');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     urlCategory ? [urlCategory] : allCategories
@@ -155,7 +156,9 @@ function GalleryContent() {
   const [rating, setRating] = useState<string>('sfw');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagSearch, setTagSearch] = useState('');
-  const [fullscreenImg, setFullscreenImg] = useState<string | null>(null);
+  
+  // Agora guardamos o item completo selecionado para mostrar tags no modal
+  const [fullscreenItem, setFullscreenItem] = useState<GalleryItem | null>(null);
 
   // Estado para abrir/fechar filtros no celular
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -164,15 +167,20 @@ function GalleryContent() {
     tag.toLowerCase().includes(tagSearch.toLowerCase())
   );
 
-  const filteredItems = galleryItems.filter((item) => {
-    const matchCategory = selectedCategories.includes(item.category);
-    const matchStyle = renderStyle === 'all' || item.renderStyle === renderStyle;
-    const matchRating = rating === 'all' || item.rating === rating;
-    const matchTags =
-      selectedTags.length === 0 || selectedTags.some((tag) => item.tags?.includes(tag));
+  // 1. FILTRAGEM + ORDENAÇÃO ALFABÉTICA AUTOMÁTICA (A-Z)
+  const filteredItems = useMemo(() => {
+    return galleryItems
+      .filter((item) => {
+        const matchCategory = selectedCategories.includes(item.category);
+        const matchStyle = renderStyle === 'all' || item.renderStyle === renderStyle;
+        const matchRating = rating === 'all' || item.rating === rating;
+        const matchTags =
+          selectedTags.length === 0 || selectedTags.some((tag) => item.tags?.includes(tag));
 
-    return matchCategory && matchStyle && matchRating && matchTags;
-  });
+        return matchCategory && matchStyle && matchRating && matchTags;
+      })
+      .sort((a, b) => a.title.localeCompare(b.title, 'pt-BR', { sensitivity: 'base' }));
+  }, [selectedCategories, renderStyle, rating, selectedTags]);
 
   const toggleCategory = (cat: string) => {
     setSelectedCategories((prev) =>
@@ -195,11 +203,11 @@ function GalleryContent() {
   };
 
   useEffect(() => {
-    document.body.style.overflow = fullscreenImg ? 'hidden' : 'unset';
+    document.body.style.overflow = fullscreenItem ? 'hidden' : 'unset';
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [fullscreenImg]);
+  }, [fullscreenItem]);
 
   return (
     <div className="max-w-[1440px] mx-auto px-3.5 sm:px-6 py-6 sm:py-10 md:py-12 flex flex-col md:flex-row gap-6 md:gap-12 min-h-screen">
@@ -218,7 +226,6 @@ function GalleryContent() {
             </h1>
           </div>
 
-          {/* Botão de Toggle visível APENAS em celular */}
           <button
             onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
             className="md:hidden flex items-center gap-2 px-3 py-1.5 bg-red-950/40 border border-red-900/60 text-red-300 text-xs font-serif-gothic uppercase tracking-wider rounded-sm"
@@ -228,7 +235,7 @@ function GalleryContent() {
           </button>
         </div>
 
-        {/* Bloco de Filtros (No celular abre/fecha com animação; no desktop sempre aberto) */}
+        {/* Bloco de Filtros */}
         <div className={`space-y-7 md:block ${mobileFiltersOpen ? 'block pt-2' : 'hidden md:block'}`}>
           
           {/* 1. TIPOS DE OBRA */}
@@ -251,6 +258,16 @@ function GalleryContent() {
                 label="Completo"
                 checked={selectedCategories.includes('fullbody')}
                 onChange={() => toggleCategory('fullbody')}
+              />
+              <CustomCheckbox
+                label="Símbolo"
+                checked={selectedCategories.includes('symbol')}
+                onChange={() => toggleCategory('symbol')}
+              />
+              <CustomCheckbox
+                label="Logo"
+                checked={selectedCategories.includes('logo')}
+                onChange={() => toggleCategory('logo')}
               />
             </div>
           </div>
@@ -355,7 +372,7 @@ function GalleryContent() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.3 }}
-                  onClick={() => setFullscreenImg(item.imageSrc)}
+                  onClick={() => setFullscreenItem(item)}
                   className="w-full aspect-square relative border border-red-900/30 bg-neutral-950 shadow-lg cursor-zoom-in group overflow-hidden rounded-xs"
                 >
                   <Image
@@ -392,33 +409,75 @@ function GalleryContent() {
         )}
       </main>
 
-      {/* MODAL TELA CHEIA */}
+      {/* MODAL TELA CHEIA (COM EXIBIÇÃO DE TAGS E DETALHES) */}
       <AnimatePresence>
-        {fullscreenImg && (
+        {fullscreenItem && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setFullscreenImg(null)}
-            className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/98 p-3 sm:p-6 md:p-12 cursor-zoom-out"
+            onClick={() => setFullscreenItem(null)}
+            className="fixed inset-0 z-[2000] flex flex-col items-center justify-between bg-black/98 backdrop-blur-md p-3 sm:p-6 md:p-8 cursor-zoom-out overflow-y-auto"
           >
-            <button
-              className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[2010] p-2.5 sm:p-3 rounded-full bg-neutral-900/90 border border-red-900/60 text-red-500 hover:bg-red-950 hover:text-red-300 transition-all shadow-2xl cursor-pointer"
-            >
-              <X size={20} className="sm:w-6 sm:h-6" />
-            </button>
-            <p className="absolute top-6 sm:top-8 text-neutral-400 font-serif-gothic text-[10px] sm:text-xs tracking-widest uppercase pointer-events-none text-center px-12">
-              [ Toque em qualquer lugar para fechar ]
-            </p>
+            {/* Topo do Modal: Botão de Fechar e Aviso */}
+            <div className="w-full max-w-5xl flex items-center justify-between z-[2010] pointer-events-none pt-2 sm:pt-0">
+              <p className="text-neutral-500 font-serif-gothic text-[10px] sm:text-xs tracking-widest uppercase">
+                [ Toque fora para fechar ]
+              </p>
+              <button
+                onClick={() => setFullscreenItem(null)}
+                className="p-2 sm:p-2.5 rounded-full bg-neutral-900/90 border border-red-900/60 text-red-500 hover:bg-red-950 hover:text-red-300 transition-all shadow-2xl cursor-pointer pointer-events-auto"
+                title="Fechar (ESC)"
+              >
+                <X size={20} className="sm:w-6 sm:h-6" />
+              </button>
+            </div>
 
-            <div className="relative w-full h-full max-w-5xl max-h-[75vh] sm:max-h-[85vh] flex items-center justify-center mt-4 sm:mt-0">
+            {/* Imagem em Destaque */}
+            <div 
+              className="relative w-full max-w-5xl flex-1 min-h-[45vh] max-h-[65vh] sm:max-h-[72vh] flex items-center justify-center my-3"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Image
-                src={fullscreenImg}
-                alt="Arte Expandida"
+                src={fullscreenItem.imageSrc}
+                alt={fullscreenItem.title}
                 fill
                 className="object-contain"
               />
             </div>
+
+            {/* Painel Inferior: Título e Tags da Obra */}
+            <div
+              className="w-full max-w-2xl border border-red-950/80 bg-[#0a0a0d]/95 backdrop-blur-md p-3.5 sm:p-4 rounded-sm space-y-2.5 text-center z-[2010] shadow-2xl mb-2 sm:mb-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-center gap-2.5 flex-wrap">
+                <h3 className="font-gothic text-sm sm:text-lg text-neutral-100 tracking-wider">
+                  {fullscreenItem.title}
+                </h3>
+                {fullscreenItem.rating === 'nsfw' && (
+                  <span className="px-2 py-0.5 bg-red-950 border border-red-800 text-red-400 text-[9px] font-serif-gothic uppercase tracking-widest font-bold">
+                    NSFW
+                  </span>
+                )}
+              </div>
+
+              {/* Tags Relacionadas */}
+              {fullscreenItem.tags && fullscreenItem.tags.length > 0 && (
+                <div className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap pt-0.5">
+                  {fullscreenItem.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2 sm:px-2.5 py-0.5 bg-black/60 border border-red-900/40 text-red-300 font-serif-gothic text-[10px] sm:text-[11px] uppercase tracking-wider rounded-xs flex items-center gap-1"
+                    >
+                      <span className="text-red-600 text-[8px]">✦</span>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </motion.div>
         )}
       </AnimatePresence>

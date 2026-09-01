@@ -1,4 +1,4 @@
-export type ArtCategory = 'icon' | 'bust' | 'halfbody' | 'fullbody' | 'chibi' | 'scenery';
+export type ArtCategory = 'icon' | 'bust' | 'halfbody' | 'fullbody' | 'chibi' | 'scenery' | 'symbol' | 'logo';
 export type RenderStyle = 'sketch' | 'lineart' | 'flat_color' | 'full_render';
 export type ContentRating = 'sfw' | 'nsfw';
 
