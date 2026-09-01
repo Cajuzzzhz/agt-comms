@@ -121,7 +121,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 'intenção',
     title: 'Intenção',
-    imageSrc: '/images/gallery/intenção.png',
+    imageSrc: '/images/gallery/Intenção.png',
     category: 'symbol',
     renderStyle: 'full_render',
     rating: 'sfw',
@@ -274,7 +274,7 @@ export const galleryItems: GalleryItem[] = [
    {
     id: 'Elleanor',
     title: 'Elleanor',
-    imageSrc: '/images/gallery/Elleanor palestride.png',
+    imageSrc: '/images/gallery/Elleanor Palestride.png',
     category: 'halfbody',
     renderStyle: 'full_render',
     rating: 'sfw',
