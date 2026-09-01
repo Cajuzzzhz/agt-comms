@@ -52,26 +52,28 @@ export default function CommissionModal({ tier, onClose }: CommissionModalProps)
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
             onClick={handleCloseModal}
-            className="fixed inset-0 z-[999] flex flex-col items-center justify-start md:justify-center bg-black/95 backdrop-blur-md p-4 sm:p-6 md:p-8 overflow-y-auto"
+            className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md overflow-y-auto touch-manipulation"
           >
-            {/* Botão de Fechar Modal Fixo */}
+            {/* Botão de Fechar no Topo (Fixo na tela, sempre visível e grande) */}
             <button 
               onClick={(e) => {
                 e.stopPropagation();
                 handleCloseModal();
               }}
-              className="fixed top-4 right-4 sm:top-6 sm:right-6 z-[1000] p-2.5 sm:p-3 rounded-full bg-neutral-900/90 border border-red-900/60 text-red-500 hover:bg-red-950 hover:text-red-300 transition-all shadow-2xl cursor-pointer"
+              className="fixed top-3 right-3 sm:top-6 sm:right-6 z-[10000] w-12 h-12 rounded-full bg-neutral-900 border-2 border-red-800 text-red-400 hover:text-white active:scale-90 transition-transform flex items-center justify-center shadow-[0_4px_25px_rgba(0,0,0,0.9)] cursor-pointer"
               title="Fechar (ESC)"
+              aria-label="Fechar modal"
             >
-              <X size={20} className="sm:w-6 sm:h-6" />
+              <X size={24} />
             </button>
 
-            {/* Conteúdo Central */}
+            {/* Container com scroll seguro (Sem my-auto para não cortar o final) */}
             <div 
-              className="w-full max-w-5xl flex flex-col items-center my-auto pt-14 pb-8 sm:py-8"
+              className="w-full max-w-5xl mx-auto flex flex-col items-center pt-16 pb-24 px-4 sm:px-8"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="text-center space-y-1.5 mb-6 sm:mb-8 px-4">
+              {/* Título */}
+              <div className="text-center space-y-1.5 mb-6 sm:mb-8">
                 <p className="text-red-600 text-[10px] sm:text-xs tracking-[0.3em] font-serif-gothic uppercase">
                   ♰ Registro de Obras ♰
                 </p>
@@ -81,14 +83,14 @@ export default function CommissionModal({ tier, onClose }: CommissionModalProps)
               </div>
 
               {/* Grid das 3 Imagens */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6 md:gap-8 w-full max-w-xs sm:max-w-5xl px-2 sm:px-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-6 md:gap-8 w-full max-w-xs sm:max-w-5xl">
                 {tier.examples.map((src, idx) => (
                   <motion.div
                     key={idx}
                     layoutId={`artwork-${src}`}
                     onClick={() => setFullscreenImg(src)}
                     className="w-full aspect-square border-2 border-red-950/80 p-1.5 sm:p-2 bg-[#0c0c0e] shadow-[0_0_30px_rgba(150,10,10,0.15)] relative rounded-sm cursor-zoom-in group hover:border-red-800 transition-colors"
-                    whileHover={{ scale: 1.03 }}
+                    whileHover={{ scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
                   >
                     <div className="w-full h-full border border-red-900/40 relative overflow-hidden bg-neutral-950">
@@ -107,21 +109,32 @@ export default function CommissionModal({ tier, onClose }: CommissionModalProps)
                 ))}
               </div>
 
-              {/* Botão para ir à Galeria */}
-              <Link 
-                href={`/galeria?category=${tier.id}`}
-                onClick={handleCloseModal}
-                className="mt-8 sm:mt-12 flex items-center gap-3 px-6 sm:px-8 py-3 bg-red-950/60 text-red-200 border border-red-800 hover:border-red-500 hover:bg-red-900/50 transition-all font-serif-gothic uppercase tracking-widest text-xs rounded-sm group text-center"
-              >
-                Ver mais exemplos
-                <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform text-red-500" />
-              </Link>
+              {/* BOTÕES INFERIORES: Ver Mais e Fechar Janela */}
+              <div className="mt-8 sm:mt-12 flex flex-col gap-3 w-full max-w-xs sm:max-w-sm">
+                <Link 
+                  href={`/galeria?category=${tier.id}`}
+                  onClick={handleCloseModal}
+                  className="w-full py-3.5 bg-red-950 border border-red-800 hover:border-red-500 hover:bg-red-900 text-red-100 font-serif-gothic uppercase tracking-widest text-xs rounded-sm flex items-center justify-center gap-2 transition-all text-center shadow-lg"
+                >
+                  <span>Ver mais exemplos</span>
+                  <ArrowRight size={15} className="text-red-400" />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="w-full py-3.5 bg-[#10080a] border border-red-950 hover:border-red-800 text-neutral-400 hover:text-red-300 font-serif-gothic uppercase tracking-widest text-xs rounded-sm transition-all cursor-pointer text-center"
+                >
+                  ✕ Fechar Janela
+                </button>
+              </div>
+
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* OVERLAY DE TELA CHEIA (Fullscreen Image) */}
+      {/* OVERLAY DE TELA CHEIA */}
       <AnimatePresence>
         {fullscreenImg && (
           <motion.div 
@@ -129,20 +142,23 @@ export default function CommissionModal({ tier, onClose }: CommissionModalProps)
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
             onClick={() => setFullscreenImg(null)}
-            className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/98 p-3 sm:p-6 md:p-12 cursor-zoom-out"
+            className="fixed inset-0 z-[10001] flex flex-col items-center justify-center bg-black/98 p-3 sm:p-6 md:p-12 cursor-zoom-out touch-manipulation"
           >
             <button 
-              className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[2010] p-2.5 sm:p-3 rounded-full bg-neutral-900/90 border border-red-900/60 text-red-500 hover:bg-red-950 hover:text-red-300 transition-all shadow-2xl cursor-pointer"
+              onClick={() => setFullscreenImg(null)}
+              className="fixed top-3 right-3 sm:top-6 sm:right-6 z-[10002] w-12 h-12 rounded-full bg-neutral-900 border-2 border-red-800 text-red-400 hover:text-white active:scale-90 transition-transform flex items-center justify-center shadow-2xl cursor-pointer"
+              title="Fechar imagem"
             >
-              <X size={20} className="sm:w-6 sm:h-6" />
+              <X size={24} />
             </button>
-            <p className="absolute top-6 sm:top-8 text-neutral-500 font-serif-gothic text-[10px] sm:text-xs tracking-widest uppercase pointer-events-none text-center px-12">
+
+            <p className="fixed bottom-6 text-neutral-400 font-serif-gothic text-[11px] sm:text-xs tracking-widest uppercase pointer-events-none text-center px-4 bg-black/80 py-1.5 border border-red-950/80 rounded-full z-10">
               [ Toque em qualquer lugar para fechar ]
             </p>
             
             <motion.div 
               layoutId={`artwork-${fullscreenImg}`}
-              className="relative w-full h-full max-w-5xl max-h-[75vh] sm:max-h-[85vh] rounded-sm overflow-hidden border border-red-900/30 shadow-[0_0_80px_rgba(150,10,10,0.15)] bg-neutral-950 mt-4 sm:mt-0"
+              className="relative w-full h-full max-w-5xl max-h-[75vh] sm:max-h-[85vh] rounded-sm overflow-hidden border border-red-900/30 shadow-[0_0_80px_rgba(150,10,10,0.15)] bg-neutral-950 my-auto"
             >
               <Image 
                 src={fullscreenImg} 
